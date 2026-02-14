@@ -1,4 +1,4 @@
-name: Update Player Level
+name: Ranking Reward System
 on:
   pull_request:
     types: [closed]
@@ -24,11 +24,10 @@ jobs:
             --user ${{ github.event.pull_request.user.login }} \
             --labels "${{ join(github.event.pull_request.labels.*.name, ',') }}"
 
-      # MUITO IMPORTANTE: Salva o banco de dados atualizado de volta no repositório
       - name: Commit Database Changes
         run: |
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action Bot"
+          git config --local user.email "reward_bot@github.com"
+          git config --local user.name "Reward Bot [CI/CD]"
           git add database.json
           git commit -m "Update XP/Level for ${{ github.event.pull_request.user.login }}"
           git push
