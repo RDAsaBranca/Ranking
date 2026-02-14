@@ -1,4 +1,4 @@
-name: Reward System
+name: Update Player Level
 on:
   pull_request:
     types: [closed]
@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      
+
       # Instala o Rust para rodar o seu script de gerenciamento
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
@@ -23,7 +23,7 @@ jobs:
           cargo run --release -- \
             --user ${{ github.event.pull_request.user.login }} \
             --labels "${{ join(github.event.pull_request.labels.*.name, ',') }}"
-            
+
       # MUITO IMPORTANTE: Salva o banco de dados atualizado de volta no repositório
       - name: Commit Database Changes
         run: |
