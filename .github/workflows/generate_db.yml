@@ -1,0 +1,45 @@
+name: Generate Task Registry
+
+on:
+  push:
+    # Triggered only when some new stuff is coming into the Task's Markdown files
+    paths:
+      - "content/**"
+    branches:
+      - main
+
+# Avoids race conditions which can lead to merge confliect
+concurrency:
+  group: registry-generation
+  cancel-in-progress: true
+
+jobs:
+  build-and-update:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Code Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Rust Configuration
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Generate registry.json
+        run: |
+          cd scripts
+          # Compila e roda o binário que varre a pasta 'content'
+          cargo run --bin gen_db
+
+      - name: Commit and push updates
+        run: |
+          git config --local user.email "ranking_bot@github.com"
+          git config --local user.name "RankingBot [CI/CD]"
+
+          # Verifica se houve alteração no registry.json antes de tentar o commit
+          if git add database.json && git commit -m "chore: Update task catalogue [skip ci]"; then
+            git push origin main
+          else
+            echo "No changes detected, skipping..."
+          fi
