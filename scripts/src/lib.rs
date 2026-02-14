@@ -4,32 +4,33 @@ use reqwest::header::{AUTHORIZATION, USER_AGENT};
 use std::env;
 
 #[derive(Debug, Serialize, Deserialize)]
-struct Quest {
+struct Task {
     id: String,
     title: String,
     class: String,
+    repeatable: bool,
+    unique: bool,
     xp: u32,
 }
 
 struct ClaimCommand {
-    quest_id: String,
+    task_id: String,
     repository: String,
     commit_sha: String,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct QuestRegistry {
-    pub quests: HashMap<String, Quest>,
+pub struct TaskRegistry {
+    pub tasks: HashMap<String, Task>,
 }
 
-impl QuestRegistry {
+impl TaskRegistry {
     pub async fn validate_private_work(
         &self,
         org: &str,
         repo: &str,
         commit_sha: &str,
     ) -> Result<bool, Box<dyn std::error::Error>> {
-        // Recupera o Token de Acesso Pessoal (PAT) das variáveis de ambiente
         let token = env::var("PRIVATE_REPO_TOKEN")
             .expect("PRIVATE_REPO_TOKEN still not SET!, Please fix it!");
 
@@ -39,7 +40,7 @@ impl QuestRegistry {
         let response = client
             .get(&url)
             .header(AUTHORIZATION, format!("Bearer {}", token))
-            .header(USER_AGENT, "QuestBot-Rust-Validator")
+            .header(USER_AGENT, "TaskBot")
             .send()
             .await?;
 
@@ -51,10 +52,29 @@ impl QuestRegistry {
             Ok(false)
         }
     }
+    pub async fn validate_commit(
+        &self,
+        org: &str,
+        sha: &str, 
+        repository: &str,
+        )-> Result<bool, Box<dyn std::error::Error>> {
+        let token = env::var("PRIVATE_REPO_TOKEN")?;
+        let url = format!("https://api.github.com/repos/{}/{}/compare/main...{}", org, repository, sha);
+
+        let client = reqwest::Client::new();
+        let res = client.get(url)
+            .header(AUTHORIZATION, format!("Bearer {}", token))
+            .header(USER_AGENT, "TaskBot")
+            .send()
+            .await?;
+
+        let json: serde_json::Value = res.json().await?;
+        let status = json["status"].as_str().unwrap_or("");
+        Ok(status == "behind" || status == "identical")
+    }
 }
-// Exemplo de lógica para processar o comando vindo do comentário
 fn parse_claim_command(comment: &str) -> Option<ClaimCommand> {
-    // Espera o formato: /claim ID commit:HASH
+    // valid format: /claim <Task_ID> repository:<repo_name> commit:<commit_HASH>
     let parts: Vec<&str> = comment.split_whitespace().collect();
     if parts.len() == 3 && parts[0] == "/claim" && parts[2].starts_with("commit:") {
         let quest_id = parts[1].to_string();

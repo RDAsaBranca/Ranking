@@ -5,11 +5,11 @@ use walkdir::WalkDir;
 
 #[derive(Serialize, Deserialize)]
 struct Registry {
-    quests: HashMap<String, Quest>,
+    tasks: HashMap<String, Task>,
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let mut registry = Registry { quests: HashMap::new() };
+    let mut registry = Registry { tasks: HashMap::new() };
 
     for entry in WalkDir::new("../content")
         .into_iter()
@@ -18,8 +18,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     {
         let content = fs::read_to_string(entry.path())?;
         if let Some(fm_block) = content.split("---").nth(1) {
-            let quest: Quest = serde_yaml::from_str(fm_block)?;
-            registry.quests.insert(quest.id.clone(), quest);
+            let task: Task = serde_yaml::from_str(fm_block)?;
+            registry.tasks.insert(task.id.clone(), task);
         }
     }
 
