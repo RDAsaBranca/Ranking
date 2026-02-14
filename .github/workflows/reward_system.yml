@@ -1,0 +1,34 @@
+name: Reward System
+on:
+  pull_request:
+    types: [closed]
+
+jobs:
+  level_up:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      # Instala o Rust para rodar o seu script de gerenciamento
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Run Level Manager
+        env:
+          DISCORD_BOT_TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}
+          GUILD_ID: ${{ secrets.MY_DISCORD_GUILD_ID }}
+        run: |
+          # O cargo run vai processar o merge, atualizar o JSON e avisar o Discord
+          cargo run --release -- \
+            --user ${{ github.event.pull_request.user.login }} \
+            --labels "${{ join(github.event.pull_request.labels.*.name, ',') }}"
+            
+      # MUITO IMPORTANTE: Salva o banco de dados atualizado de volta no repositório
+      - name: Commit Database Changes
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action Bot"
+          git add database.json
+          git commit -m "Update XP/Level for ${{ github.event.pull_request.user.login }}"
+          git push
