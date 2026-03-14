@@ -7,17 +7,24 @@ struct Args {
     #[arg(short, long)]
     user: String,
     #[arg(short, long)]
+    sha: String,
+    #[arg(short, long)]
     comment: String,
 }
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let args = Args::parse(); // "/claim FW-01 repostory:repo commit:hash"
-    
-    let (task_id, repository, commit_sha) = parse_command(&args.comment).expect("Invalid format!");
+    let args = Args::parse(); // "/claim FW-01 repository:repo commit:hash"
+   
+    let registry = TaskRegistry::load("database.json").
+        .expect("Could not load properly the 'database.json' file, please run gen_db first!");
 
-    if !TaskRegistry::validate_commit(&commit_sha, &repository).await? {
-        return Err(format!("This commit was not merged into the main branch of the '{}' repository!", repository).into());
+    if let Some(command) = parse_claim_command(&args.comment) {
+        if let Some(task) = registry.task.get(&command.task_id) {
+            if registry.validate_commit("RDAsaBranca", &command.commit_sha, &command.repository).await? {
+                println!("Task {} validated for user {}", task.id, args.user);
+            }
+        }
     }
 
     update_player_data(&args.user, &task_id).await?;
