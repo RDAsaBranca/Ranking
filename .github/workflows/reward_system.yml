@@ -18,10 +18,12 @@ jobs:
         env:
           DISCORD_BOT_TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}
           GUILD_ID: ${{ secrets.MY_DISCORD_GUILD_ID }}
+          ELETRONICA_REPO_TOKEN: ${{ secrets.ELETRONICA_REPO_TOKEN }}
         run: |
           # O cargo run vai processar o merge, atualizar o JSON e avisar o Discord
           cargo run --release -- \
             --user ${{ github.event.pull_request.user.login }} \
+            --sha ${{ github.event.pull_request.merge_commit_sha }} \
             --labels "${{ join(github.event.pull_request.labels.*.name, ',') }}"
 
       - name: Commit Database Changes
