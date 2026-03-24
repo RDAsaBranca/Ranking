@@ -1,0 +1,13 @@
+{
+  "tasks": {
+    "FW-01": {
+      "id": "FW-01",
+      "title": "First Rust Setup",
+      "class": "firmware_artificier",
+      "repeatable": false,
+      "unique": true,
+      "xp": 300
+    }
+  },
+  "players": {}
+}
