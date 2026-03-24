@@ -6,7 +6,7 @@
       "class": "firmware_artificier",
       "repeatable": false,
       "unique": true,
-      "xp": 300
+      "xp": 500
     }
   },
   "players": {}
