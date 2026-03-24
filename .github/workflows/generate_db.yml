@@ -34,8 +34,8 @@ jobs:
 
       - name: Commit and push updates
         run: |
-          git config --local user.email "task_bot@github.com"
-          git config --local user.name "TaskBot [CI/CD]"
+          git config --local user.email "jrrlino157@gmail.com"
+          git config --local user.name "JRRL157"
 
           # Verifica se houve alteração no registry.json antes de tentar o commit
           if git add database.json && git commit -m "chore: Update task catalogue [skip ci]"; then
